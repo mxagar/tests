@@ -12,7 +12,9 @@
 #include "asl/JSON.h" // Json
 #include "asl/Xml.h" // XML
 #include "asl/testing.h" // Testing
-
+#include "asl/Log.h" // Logging
+#include "asl/Directory.h" // File System; It indludes File.h
+#include "asl/CmdArgs.h" // Command Line Argument Paring
 
 using namespace asl;
 
@@ -29,13 +31,13 @@ int main(int argc, char** argv) {
         - Containers: Array, Dict
         - Var
         - JSON
-
         - XML
         - Testing
         - Logger
-        - Socket Communication
         - File System: Directories
         - Command Line Arguments
+
+        - Socket Communication
     */
 
     //
@@ -273,17 +275,70 @@ int main(int argc, char** argv) {
     // ----- Logger
     // #include "asl/Log.h"
 
-    //
-    // ----- Sockect Communication
-    // #include "asl/Log.h"
+    // Specify the filename where logs should be saved when exiting the program
+    Log::setFile("app.log"); // write to this file (default is "log.txt")
+    Log::useConsole(false);  // do not write to the console
+
+    int mode = -1;
+    // We can use ASL_LOG_ with a Level = {ERR, WARNING, INFO, DEBUG or VERBOSE}
+    ASL_LOG_(WARNING, "Ignored unknown mode %i", mode);
+    // Or, equivalently, specific macros with level endings _E, _W, _I, _D, _V
+    ASL_LOG_W("Ignored unknown mode %i", mode);
 
     //
     // ----- File System
     // #include "asl/Directory.h"
+    // #include "asl/File.h"
+
+    Directory dir(".");
+    for (auto& file: dir.files("*"))
+    {
+        if (file.lastModified() > Date::now() - 10*Date::DAY)
+            std::cout << std::string(file.name()) << ", size: " << file.size() << std::endl;
+    }
+
+    // dir.files() enumerates files
+    // dir.subdirs() enumerates subdirectories
+    // dir.items() enumerates both
+
+    // A File object has the following members:
+    // file.path(): the full path of this item
+    // file.name(): the name of the item
+    // file.directory(): the full directory containing the item
+    // file.size(): the file size in bytes (or 0 if it is a directory)
+    // file.lastModified(): a Date indicating the last modification time
+    // file.creationDate(): a Date indicating the item's creation time
 
     //
     // ----- Command Line Argument Parsing
     // #include "asl/CmdArgs.h"
+    // Get/Parse command line arguments; simialr to the Unix getopt()
+
+    // How it works
+    // We have (1) options and (2) arguments
+    // 1. Options start with '-'
+    // If an option has no value, it must end with a '!'
+    // 2. After all options, the list of arguments comes
+    // Example:
+    // convert -format jpeg -fast! -q 85 image1.png image2.bmp
+
+    CmdArgs args(argc, argv);
+    String format = args["format"]; // get value of option -format
+    int quality = args("q", 90); // get value of option -q, use value 90 if not given
+    bool fast = args.is("fast"); // check if value-less option is active
+    // Arguments:
+    // - are accessed with args[i]
+    // - the length of all is args.length()
+    for(int i=0; i < args.length(); ++i)
+    {
+        // We could carry out the functionality call here for each of the argument files
+        //convertFile(args[i], format, quality, fast);
+        std::cout << std::string(args[i]) << std::endl;
+    }
+
+    //
+    // ----- Sockect Communication
+    // #include "asl/Log.h"
 
 
 }

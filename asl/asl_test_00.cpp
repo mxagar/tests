@@ -36,8 +36,6 @@ int main(int argc, char** argv) {
         - Logger
         - File System: Directories
         - Command Line Arguments
-
-        - Socket Communication
     */
 
     //

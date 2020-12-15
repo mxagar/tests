@@ -29,22 +29,47 @@ int main(int argc, char** argv) {
 
     */
 
-    String path = "/index.html", host = "somehost.com";
-    Socket socket;
-    socket.connect(host, 80);
-    socket << String(0, "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", *path, *host);
-    String response;
-    char buffer[1001];
-    while(true)
-    {
-        if(!socket.waitInput())
-            continue;
-        if(socket.disconnected())
-            break;
-        int n = socket.read(buffer, min(socket.available(), 1000));
-        if(n <= 0)
-            break;
-        response += String(buffer, n);
+    bool udp = false;
+    bool tcp = !udp;
+
+    // 1. UDP Socket: Simple Basic Type Receiver
+    if (udp) {
+        String hostUDP = "localhost"; // network name or IP
+        int portUDP = 53427; // random big value
+        PacketSocket socketUDP;
+        socketUDP.bind(hostUDP, portUDP); // bind() to a local port, connect() to a remote server
+        int *data = new int; // packet
+        std::cout << "Waiting for UDP packets..." << std::endl;
+        while (socketUDP.waitInput(5.0)) {
+            // Receive packet
+            socketUDP.readFrom(InetAddress(hostUDP, portUDP), (void*)data, sizeof(data));
+            std::cout << "data = " << *data << std::endl;
+        }
+        std::cout << "Finished!" << std::endl;
+    }
+
+    // 2. TCP Socket: JSON string receiver
+    if (tcp) {
+        String hostTCP = "localhost"; // network name or IP
+        int portTCP = 53529; // random big value
+        Socket socketTCP;
+        socketTCP.bind(hostTCP, portTCP); // bind() to a local port, connect() to a remote server
+        std::cout << "Waiting for TCP packets..." << std::endl;
+        while (socketTCP.waitData(5.0)) {
+            // Receive packet
+            //String packet_string = socketTCP.readLine();
+            int n = socketTCP.available();
+            char* data;
+            int ret	= socketTCP.read((void*)data, n);
+            String packet_string = (char*)data;
+            std::cout << "<- " << std::string(packet_string) << std::endl;
+            // Decode packet and display
+            Var packet = Json::decode(packet_string);
+            if (packet.ok()) {
+                printf("%s\n", *packet.toString());
+            }
+        }
+        std::cout << "Finished!" << std::endl;
     }
 
 }

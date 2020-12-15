@@ -29,22 +29,59 @@ int main(int argc, char** argv) {
 
     */
 
-    String path = "/index.html", host = "somehost.com";
-    Socket socket;
-    socket.connect(host, 80);
-    socket << String(0, "GET %s HTTP/1.0\r\nHost: %s\r\n\r\n", *path, *host);
-    String response;
-    char buffer[1001];
-    while(true)
-    {
-        if(!socket.waitInput())
-            continue;
-        if(socket.disconnected())
-            break;
-        int n = socket.read(buffer, min(socket.available(), 1000));
-        if(n <= 0)
-            break;
-        response += String(buffer, n);
+    bool udp = false;
+    bool tcp = !udp;
+
+    // 1. UDP Socket: Simple Basic Type Sender
+    if (udp) {
+        String hostUDP = "localhost"; // network name or IP
+        int portUDP = 53427; // random big value
+        PacketSocket socketUDP;
+        socketUDP.connect(hostUDP, portUDP); // bind() to a local port, connect() to a remote server
+        int *data = new int; // packet
+        unsigned long int maxPacketNumber = 1000;
+        std::cout << "Sending UDP packets..." << std::endl;
+        for (unsigned int i = 0; i < maxPacketNumber; ++i) {
+            // Update packet and send
+            *data = i;
+            socketUDP.sendTo(InetAddress(hostUDP, portUDP), (void*)data, sizeof(data));
+        }
     }
+
+    if (tcp) {
+        // 2. JSON Object: Measurement
+        Var measurement = Var("name", "measurement")
+                        ("id", 73)
+                        ("reference", 42)
+                        ("time", Date::now())
+                        ("successful", true)
+                        ("values", Var::array({1.1f, 2.2f, 3.3f, 4.4f, 5.5f, 6.6f}));
+
+        String measurement_json = Json::encode(measurement); // Encode Var as JSON string; equivalent to JavaScript stringify()
+        bool ret_json = Json::write("measurement.json", measurement); // Writes a var to a file in JSON format
+        Var measurement_read = Json::read("measurement.json"); // Read file data.json which is in JSON format, ans save it as Var
+        if (measurement_read.ok())
+            printf("%s\n", *measurement_read.toString()); // Print read JSON file
+
+        // 3. TCP Socket: JSON string sender
+        String hostTCP = "localhost"; // network name or IP
+        int portTCP = 53529; // random big value
+        Socket socketTCP;
+        socketTCP.connect(hostTCP, portTCP); // bind() to a local port, connect() to a remote server
+        unsigned long int maxPacketNumber = 1000;
+        std::cout << "Sending TCP packets..." << std::endl;
+        for (unsigned int i = 0; i < maxPacketNumber; ++i) {
+            // Update packet
+            measurement["id"] = i;
+            measurement["time"] = Date::now();
+            measurement["values"] =  Var::array({float(i), float(i*2), float(i*3), float(i*4), float(i*5), float(i*6)});
+            // Prepare packet and send
+            String packet = Json::encode(measurement);
+            const char* packet_str = std::string(packet).c_str();
+            std::cout << "-> [" << packet.length() << "]: " << std::string(packet) << std::endl;
+            socketTCP.write((void*)(packet_str), packet.length());
+        }
+    }
+   
 
 }

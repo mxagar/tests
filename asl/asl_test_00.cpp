@@ -334,9 +334,4 @@ int main(int argc, char** argv) {
         std::cout << std::string(args[i]) << std::endl;
     }
 
-    //
-    // ----- Sockect Communication
-    // #include "asl/Log.h"
-
-
 }

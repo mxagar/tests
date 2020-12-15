@@ -18,6 +18,6 @@ The examples are divided in the following files:
     - File System: Directories
     - Command Line Arguments
 
-- `asl_test_01.cpp`: Communication - UDP (int) & TCP (JSON string) sender
+- `asl_test_01.cpp`: Communication - UDP (int) & TCP (JSON string) sender/server side
 
-- `asl_test_02.cpp`: Communication - UDP (int) & TCP (JSON string) receiver
+- `asl_test_02.cpp`: Communication - UDP (int) & TCP (JSON string) receiver/client side

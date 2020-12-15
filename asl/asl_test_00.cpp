@@ -1,3 +1,21 @@
+/*
+    See:
+    https://aslze.github.io/asl-doc/index.html
+
+    Covered here:
+    - Time
+    - Arithmetic, Numbers, Random
+    - String
+    - Containers: Array, Dict
+    - Var
+    - JSON
+    - XML
+    - Testing
+    - Logger
+    - File System: Directories
+    - Command Line Arguments
+*/
+
 #include <iostream>
 #include <string>
 
@@ -19,24 +37,6 @@
 using namespace asl;
 
 int main(int argc, char** argv) {
-
-    /*
-        See:
-        https://aslze.github.io/asl-doc/index.html
-
-        Covered here:
-        - Time
-        - Arithmetic, Numbers, Random
-        - String
-        - Containers: Array, Dict
-        - Var
-        - JSON
-        - XML
-        - Testing
-        - Logger
-        - File System: Directories
-        - Command Line Arguments
-    */
 
     //
     // ----- Time

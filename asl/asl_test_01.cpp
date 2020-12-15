@@ -44,7 +44,7 @@ using namespace asl;
 
 int main(int argc, char** argv) {
 
-    bool udp = true;
+    bool udp = false;
     bool tcp = !udp;
 
     // 1. UDP Socket: Simple Basic Type Sender
@@ -83,12 +83,12 @@ int main(int argc, char** argv) {
         // 3. TCP Socket: JSON string sender/server
         String hostTCP = "localhost"; // network name or IP
         int portTCP = 53529; // random big value
-        Socket socketTCP;
-        socketTCP.bind(hostTCP, portTCP); // servers bind() to a local port, clients connect() to a remote server
+        Socket socketConnection; // first socket which waits for connect() from client
+        socketConnection.bind(hostTCP, portTCP); // servers bind() to a local port, clients connect() to a remote server
         // In TCP, servers need to bind(), listen() & accept()
         // The socket returned by accept() is used to communicate/send/write
-        socketTCP.listen();
-        Socket socket = socketTCP.accept();
+        socketConnection.listen();
+        Socket socketTCP = socketConnection.accept();
         unsigned long int maxPacketNumber = 1000;
         std::cout << "Sending TCP packets..." << std::endl;
         for (unsigned int i = 0; i < maxPacketNumber; ++i) {
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
             measurement["values"] =  Var::array({float(i), float(i*2), float(i*3), float(i*4), float(i*5), float(i*6)});
             // Prepare packet and send
             String packet = Json::encode(measurement);
-            socket << packet + "\n"; // pass string with EOL (end-of-line), then readLine in the client
+            socketTCP << packet + "\n"; // pass string with EOL (end-of-line), then readLine in the client
             std::cout << "-> [" << packet.length() << "]: " << std::string(packet) << std::endl;
         }
         std::cout << "Finished!" << std::endl;

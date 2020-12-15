@@ -41,7 +41,7 @@ using namespace asl;
 
 int main(int argc, char** argv) {
 
-    bool udp = true;
+    bool udp = false;
     bool tcp = !udp;
 
     // 1. UDP Socket: Simple Basic Type Receiver
@@ -69,6 +69,8 @@ int main(int argc, char** argv) {
         // In TCP, servers need to connect(), and then read
         std::cout << "Waiting for TCP packets..." << std::endl;
         while (!socketTCP.disconnected()) {
+            if (!socketTCP.waitData())
+                continue;
             // Receive packet
             String line = socketTCP.readLine(); // server send strings with EOL (end-of-line)
             // Decode packet and display
